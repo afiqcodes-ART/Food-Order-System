@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Online Food Ordering & Delivery System</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <style>
+    /* Reset and base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background-color: #fafafa;
+      color: #222;
+      overflow: hidden;
+    }
+    :root {
+      --primary: #db2777;
+      --primary-dark: #99154b;
+      --background-light: #fff;
+      --background-muted: #f9f9f9;
+      --text-primary: #222;
+      --text-muted: #666;
+      --border-radius: 12px;
+      --shadow: 0 8px 24px rgba(219, 39, 119, 0.15);
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 48px;
+      --max-width: 1200px;
+    }
+
+    /* Layout grid */
+    .app-container {
+      display: grid;
+      grid-template-columns: 240px 1fr 320px;
+      grid-template-rows: 60px 1fr 80px;
+      grid-template-areas:
+        "header header header"
+        "sidebar-content main-content order-tracking"
+        "footer footer footer";
+      height: 100vh;
+      overflow: hidden;
+      max-width: 100vw;
+    }
+
+    header.app-header {
+      grid-area: header;
+      background: linear-gradient(135deg, var(--primary), #d6336c);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--spacing-lg);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 25;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: 2px;
+      font-family: 'Poppins', sans-serif;
+      user-select: none;
+    }
+    .header-search {
+      position: relative;
+      flex: 1;
+      max-width: 480px;
+      margin: 0 var(--spacing-md);
+    }
+    input#search-food {
+      width: 100%;
+      padding: 12px 44px 12px 16px;
+      border-radius: 30px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      outline-offset: 4px;
+    }
+    input#search-food:focus {
+      outline: 3px solid rgba(255 0 100 / 0.5);
+    }
+    .material-icons.search-icon {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 24px;
+      color: white;
+      pointer-events: none;
+      user-select: none;
+    }
+    /* Profile button */
+    .profile-btn {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      gap: var(--spacing-sm);
+    }
+    .profile-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #6f42c1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .profile-avatar .material-icons {
+      color: white;
+      font-size: 24px;
+    }
+    .profile-name {
+      font-weight: 600;
+      color: white;
+      user-select: none;
+    }
+    /* Sidebar with categories */
+    aside.sidebar {
+      grid-area: sidebar-content;
+      background: var(--background-light);
+      border-right: 1px solid #eee;
+      overflow-y: auto;
+      padding: var(--spacing-lg);
+      box-shadow: var(--shadow);
+    }
+    .sidebar h2 {
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+      color: var(--primary-dark);
+    }
+    ul.category-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+    ul.category-list li {
+      cursor: pointer;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: var(--border-radius);
+      user-select: none;
+      transition: background-color 0.3s ease;
+      color: var(--primary-dark);
+    }
+    ul.category-list li.active,
+    ul.category-list li:hover {
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+    /* Main content area with menu */
+    main.main-content {
+      grid-area: main-content;
+      padding: var(--spacing-lg);
+      overflow-y: auto;
+      background: var(--background-muted);
+    }
+    .menu-header {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: var(--spacing-lg);
+      color: var(--primary-dark);
+    }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px,1fr));
+      gap: var(--spacing-lg);
+    }
+    .menu-item-card {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      transition: box-shadow 0.3s ease;
+    }
+    .menu-item-card:hover {
+      box-shadow: 0 12px 36px rgba(219, 39, 119, 0.3);
+    }
+    .menu-image {
+      width: 100%;
+      aspect-ratio: 4/3;
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+      object-fit: cover;
+    }
+    .menu-info {
+      padding: var(--spacing-md);
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .menu-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-sm);
+      color: var(--primary-dark);
+    }
+    .menu-description {
+      flex-grow: 1;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: var(--spacing-md);
+    }
+    .menu-price {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-md);
+    }
+    button.add-to-cart-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 10px 0;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+    button.add-to-cart-btn:hover {
+      background: var(--primary-dark);
+    }
+    /* Order Tracking Panel */
+    aside.order-tracking {
+      grid-area: order-tracking;
+      background: var(--background-light);
+      box-shadow: var(--shadow);
+      padding: var(--spacing-lg);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+      border-left: 1px solid #eee;
+    }
+    .track-header {
+      font-weight: 700;
+      font-size: 1.7rem;
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: var(--spacing-sm);
+    }
+    .empty-cart-msg {
+      font-style: italic;
+      color: var(--text-muted);
+      margin-top: 16px;
+      user-select: none;
+    }
+    .cart-list {
+      list-style: none;
+      margin-top: var(--spacing-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+    .cart-item {
+      background: var(--background-muted);
+      border-radius: var(--border-radius);
+      padding: var(--spacing-md);
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cart-item-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .cart-item-name {
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
+    }
+    .cart-item-price {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .cart-item-qty-controls {
+      display: flex;
+      gap: var(--spacing-sm);
+      align-items: center;
+    }
+    button.qty-btn {
+      background: var(--primary);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      width: 24px;
+      height: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    button.qty-btn:hover {
+      background: var(--primary-dark);
+    }
+    .cart-total {
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--primary-dark);
+      margin-top: var(--spacing-lg);
+      user-select: none;
+      text-align: right;
+    }
+    button.checkout-btn {
+      margin-top: var(--spacing-md);
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 14px 0;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(219, 39, 119, 0.5);
+      transition: background-color 0.3s ease;
+      width: 100%;
+      user-select: none;
+    }
+    button.checkout-btn:disabled {
+      background: #f7b8d5;
+      cursor: default;
+      box-shadow: none;
+    }
+    button.checkout-btn:hover:enabled {
+      background: var(--primary-dark);
+    }
+    /* Order tracking status */
+    .order-status {
+      margin-top: var(--spacing-lg);
+    }
+    .order-status h3 {
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: var(--spacing-md);
+    }
+    .order-step {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
+      user-select: none;
+    }
+    .order-step-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--background-muted);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: var(--shadow);
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .order-step.completed .order-step-icon {
+      background: var(--primary);
+      color: white;
+    }
+    .order-step-text {
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+    /* Responsive design */
+    @media (max-width: 1024px) {
+      .app-container {
+        grid-template-columns: 1fr 320px;
+        grid-template-areas:
+          "header header"
+          "main-content order-tracking"
+          "footer footer";
+      }
+      aside.sidebar {
+        display: none;
+      }
+    }
+    @media (max-width: 640px) {
+      .app-container {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "header"
+          "main-content"
+          "order-tracking"
+          "footer";
+      }
+      .order-tracking {
+        border-left: none;
+        border-top: 1px solid #eee;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container" role="application">
+    <header class="app-header" role="banner" aria-label="Application header">
+      <div class="logo" aria-live="polite" aria-atomic="true">FoodOrder</div>
+      <div class="header-search">
+        <input id="search-food" type="text" placeholder="Search menu..." aria-label="Search menu" autocomplete="off" />
+        <span class="material-icons search-icon" aria-hidden="true">search</span>
+      </div>
+      <button class="profile-btn" aria-label="User Profile" title="User Profile">
+        <div class="profile-avatar" aria-hidden="true">
+          <span class="material-icons">person</span>
+        </div>
+        <span class="profile-name" id="profile-name">Customer</span>
+      </button>
+    </header>
+    <aside class="sidebar" role="navigation" aria-label="Menu categories">
+      <h2>Categories</h2>
+      <ul class="category-list" role="list" id="category-list">
+        <!-- Categories added by JS -->
+      </ul>
+    </aside>
+    <main class="main-content" role="main" tabindex="0" aria-label="Menu items and ordering">
+      <h2 class="menu-header" id="current-category">All Items</h2>
+      <div class="menu-grid" id="menu-grid">
+        <!-- Menu items added by JS -->
+      </div>
+    </main>
+    <aside class="order-tracking" role="complementary" aria-label="Order cart and tracking">
+      <h2 class="track-header">Your Order</h2>
+      <ul class="cart-list" id="cart-list" role="list">
+        <li class="empty-cart-msg">Your cart is empty.</li>
+      </ul>
+      <div class="cart-total" id="cart-total">Total: $0.00</div>
+      <button class="checkout-btn" id="checkout-btn" disabled>Place Order</button>
+
+      <div class="order-status" id="order-status" hidden>
+        <h3>Order Tracking</h3>
+        <div class="order-step completed">
+          <div class="order-step-icon"><span class="material-icons">check</span></div>
+          <div class="order-step-text">Order Received</div>
+        </div>
+        <div class="order-step" id="preparing-step">
+          <div class="order-step-icon"><span class="material-icons">access_time</span></div>
+          <div class="order-step-text">Preparing</div>
+        </div>
+        <div class="order-step" id="in-transit-step">
+          <div class="order-step-icon"><span class="material-icons">local_shipping</span></div>
+          <div class="order-step-text">In Transit</div>
+        </div>
+        <div class="order-step" id="delivered-step">
+          <div class="order-step-icon"><span class="material-icons">home</span></div>
+          <div class="order-step-text">Delivered</div>
+        </div>
+        <div style="margin-top: 20px; font-weight: 600; color: var(--primary-dark); text-align: center;">
+          Estimated Delivery Time: <span id="delivery-time-estimate">--</span>
+        </div>
+      </div>
+    </aside>
+    <footer style="grid-area: footer; background:#fff; border-top: 1px solid #eee; display:flex; justify-content:center; align-items:center; font-size:14px; color:#666;">
+      &copy; 2024 FoodOrder Online Delivery System
+    </footer>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // Sample categories and menu items data
+    const categories = [
+      { id: 'all', name: 'All Items' },
+      { id: 'pizza', name: 'Pizza' },
+      { id: 'burger', name: 'Burgers' },
+      { id: 'drinks', name: 'Drinks' },
+      { id: 'desserts', name: 'Desserts' }
+    ];
+
+    const menuItems = [
+      { id: 'p1', category: 'pizza', name: 'Margherita Pizza', description: 'Classic delight with fresh mozzarella and basil.', price: 12.99, image: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/42d7880d-4661-44f1-97c6-11231f5681db.png' },
+      { id: 'p2', category: 'pizza', name: 'Pepperoni Pizza', description: 'Loaded with pepperoni and cheese.', price: 14.99, image: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/d1fb5ecc-2b8b-4264-bc38-12c19596c702.png' },
+      { id: 'b1', category: 'burger', name: 'Classic Cheeseburger', description: 'Juicy beef patty with cheddar and lettuce.', price: 11.49, image: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/d4998d14-70fb-4e18-aa25-4fee184aa832.png' },
+      { id: 'b2', category: 'burger', name: 'Veggie Burger', description: 'Grilled veggie patty with fresh toppings.', price: 10.99, image: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/4c6bc03d-7b89-4854-a37c-d1930bfc4a34.png' },
+      { id: 'd1', category: 'drinks', name: 'Coca Cola', description: 'Refreshing soda drink.', price: 2.99, image: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/7173afd4-bcc2-4c73-b249-0e11ca9a677a.png' },
+      { id: 'd2', category: 'drinks', name: 'Orange Juice', description: 'Freshly squeezed orange juice.', price: 3.49, image: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/469e69a9-5205-4b50-98c1-f4a41c822ee1.png' },
+      { id: 'ds1', category: 'desserts', name: 'Chocolate Cake', description: 'Rich chocolate layered cake.', price: 6.99, image: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/b7a8107e-03bd-40bb-828f-ad154dc77322.png' },
+      { id: 'ds2', category: 'desserts', name: 'Ice Cream Sundae', description: 'Creamy vanilla ice cream with toppings.', price: 5.99, image: 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/ff7af499-0db0-4916-a316-924e14b56381.png' },
+    ];
+
+    const categoryListEl = document.getElementById('category-list');
+    const menuGridEl = document.getElementById('menu-grid');
+    const currentCategoryEl = document.getElementById('current-category');
+    const cartListEl = document.getElementById('cart-list');
+    const cartTotalEl = document.getElementById('cart-total');
+    const checkoutBtn = document.getElementById('checkout-btn');
+    const orderStatusEl = document.getElementById('order-status');
+    const deliveryTimeEstimateEl = document.getElementById('delivery-time-estimate');
+
+    let currentCategory = 'all';
+    let cart = [];
+    let orderInProgress = false;
+
+    function renderCategories() {
+      categoryListEl.innerHTML = '';
+      categories.forEach(cat => {
+        const li = document.createElement('li');
+        li.textContent = cat.name;
+        li.dataset.id = cat.id;
+        li.setAttribute('role', 'listitem');
+        if (cat.id === currentCategory) li.classList.add('active');
+        li.addEventListener('click', () => {
+          currentCategory = cat.id;
+          currentCategoryEl.textContent = cat.name;
+          renderCategories();
+          renderMenuItems();
+        });
+        li.tabIndex = 0;
+        li.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            li.click();
+          }
+        });
+        categoryListEl.appendChild(li);
+      });
+    }
+
+    function renderMenuItems() {
+      menuGridEl.innerHTML = '';
+      const filteredItems = currentCategory === 'all'
+        ? menuItems
+        : menuItems.filter(item => item.category === currentCategory);
+      filteredItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'menu-item-card';
+        card.innerHTML = `
+          <img src="${item.image}" alt="${item.name} - ${item.description}" class="menu-image" />
+          <div class="menu-info">
+            <div>
+              <h3 class="menu-title">${item.name}</h3>
+              <p class="menu-description">${item.description}</p>
+            </div>
+            <div>
+              <div class="menu-price">$${item.price.toFixed(2)}</div>
+              <button class="add-to-cart-btn" aria-label="Add ${item.name} to cart">Add to Cart</button>
+            </div>
+          </div>
+        `;
+        const addButton = card.querySelector('.add-to-cart-btn');
+        addButton.addEventListener('click', () => {
+          addToCart(item.id);
+        });
+        menuGridEl.appendChild(card);
+      });
+    }
+
+    function addToCart(itemId) {
+      if(orderInProgress) return alert('Order is in progress. Please wait until it is delivered.');
+      const existingItem = cart.find(ci => ci.id === itemId);
+      if(existingItem) {
+        existingItem.qty++;
+      } else {
+        const menuItem = menuItems.find(mi => mi.id === itemId);
+        if(menuItem) {
+          cart.push({...menuItem, qty: 1});
+        }
+      }
+      renderCart();
+    }
+
+    function removeFromCart(itemId) {
+      cart = cart.filter(ci => ci.id !== itemId);
+      renderCart();
+    }
+
+    function updateCartQty(itemId, delta) {
+      const ci = cart.find(ci => ci.id === itemId);
+      if (!ci) return;
+      ci.qty += delta;
+      if(ci.qty < 1) {
+        removeFromCart(itemId);
+      } else {
+        renderCart();
+      }
+    }
+
+    function renderCart() {
+      cartListEl.innerHTML = '';
+      if(cart.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'empty-cart-msg';
+        li.textContent = 'Your cart is empty.';
+        cartListEl.appendChild(li);
+        checkoutBtn.disabled = true;
+        return;
+      }
+      cart.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'cart-item';
+        li.innerHTML = `
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
+          </div>
+          <div class="cart-item-qty-controls">
+            <button class="qty-btn" aria-label="Decrease quantity of ${item.name}">−</button>
+            <div aria-live="polite" aria-atomic="true">${item.qty}</div>
+            <button class="qty-btn" aria-label="Increase quantity of ${item.name}">+</button>
+          </div>
+        `;
+        const btns = li.querySelectorAll('.qty-btn');
+        btns[0].addEventListener('click', () => updateCartQty(item.id, -1));
+        btns[1].addEventListener('click', () => updateCartQty(item.id, 1));
+        cartListEl.appendChild(li);
+      });
+      checkoutBtn.disabled = false;
+      updateCartTotal();
+    }
+
+    function updateCartTotal() {
+      const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      cartTotalEl.textContent = 'Total: $' + total.toFixed(2);
+    }
+
+    checkoutBtn.addEventListener('click', () => {
+      if(cart.length === 0 || orderInProgress) return;
+      startOrder();
+    });
+
+    // Order tracking simulation
+    const steps = ['Order Received', 'Preparing', 'In Transit', 'Delivered'];
+    let currentStep = 0;
+    let orderTimer = null;
+
+    function startOrder() {
+      orderInProgress = true;
+      currentStep = 0;
+      checkoutBtn.disabled = true;
+      renderOrderStatus();
+      orderStatusEl.hidden = false;
+      deliveryTimeEstimateEl.textContent = '30-45 minutes';
+
+      orderTimer = setInterval(() => {
+        currentStep++;
+        if (currentStep >= steps.length) {
+          clearInterval(orderTimer);
+          finishOrder();
+          return;
+        }
+        renderOrderStatus();
+      }, 7000);
+      // Clear cart after order start
+      cart = [];
+      renderCart();
+    }
+    function renderOrderStatus() {
+      const prepStep = document.getElementById('preparing-step');
+      const transitStep = document.getElementById('in-transit-step');
+      const deliveredStep = document.getElementById('delivered-step');
+
+      prepStep.classList.toggle('completed', currentStep > 0);
+      transitStep.classList.toggle('completed', currentStep > 1);
+      deliveredStep.classList.toggle('completed', currentStep > 2);
+    }
+    function finishOrder() {
+      orderInProgress = false;
+      alert('Your order has been delivered. Enjoy your food!');
+      orderStatusEl.hidden = true;
+      checkoutBtn.disabled = cart.length === 0;
+      deliveryTimeEstimateEl.textContent = '--';
+      renderOrderStatus();
+    }
+
+    // Search filter for menu items
+    const searchInput = document.getElementById('search-food');
+    searchInput.addEventListener('input', e => {
+      const searchVal = e.target.value.trim().toLowerCase();
+      if(searchVal.length < 2) {
+        // reset to current category items
+        renderMenuItems();
+        return;
+      }
+      const filteredItems = menuItems.filter(item => item.name.toLowerCase().includes(searchVal) || item.description.toLowerCase().includes(searchVal));
+      menuGridEl.innerHTML = '';
+      filteredItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'menu-item-card';
+        card.innerHTML = `
+          <img src="${item.image}" alt="${item.name} - ${item.description}" class="menu-image" />
+          <div class="menu-info">
+            <div>
+              <h3 class="menu-title">${item.name}</h3>
+              <p class="menu-description">${item.description}</p>
+            </div>
+            <div>
+              <div class="menu-price">$${item.price.toFixed(2)}</div>
+              <button class="add-to-cart-btn" aria-label="Add ${item.name} to cart">Add to Cart</button>
+            </div>
+          </div>
+        `;
+        const addButton = card.querySelector('.add-to-cart-btn');
+        addButton.addEventListener('click', () => {
+          addToCart(item.id);
+        });
+        menuGridEl.appendChild(card);
+      });
+      currentCategoryEl.textContent = searchVal.length > 0 ? `Search Results: "${searchVal}"` : 'All Items';
+      // Clear active category highlight
+      categoryListEl.querySelectorAll('li.active').forEach(li => li.classList.remove('active'));
+    });
+
+    // Initialize UI
+    renderCategories();
+    renderMenuItems();
+    renderCart();
+  </script>
+</body>
+</html>
+
